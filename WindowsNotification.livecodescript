@@ -71,13 +71,13 @@ on PostWindowsNotification pTitle, pSubTitle, pInformativeText
    if pInformativeText is not empty then
       put tTextNodes & "<text>" & xmlEscape(pInformativeText) & "</text>" into tTextNodes
    end if
-
+   
    -- Compose the full toast XML.
    -- The template attribute value uses the quote constant so no additional
    -- escaping is needed when the XML is passed to PowerShell's LoadXml() method.
    local tXml
    put "<toast><visual><binding template=" & quote & "ToastGeneric" & quote & ">" & tTextNodes & "</binding></visual></toast>" into tXml
-
+   
    -- Use the app name as the toast notifier ID so Windows associates the notification
    -- with this app in the Action Center. Falls back to a generic name if not set.
    local tAppName
@@ -85,7 +85,7 @@ on PostWindowsNotification pTitle, pSubTitle, pInformativeText
    if tAppName is empty then
       put "OpenXTalk Application" into tAppName
    end if
-
+   
    -- Build the PowerShell script content.
    -- Written to a .ps1 file rather than passed via -Command to avoid all
    -- command-line quoting issues. The file content is written verbatim.
@@ -95,8 +95,9 @@ on PostWindowsNotification pTitle, pSubTitle, pInformativeText
    put "$xml = New-Object Windows.Data.Xml.Dom.XmlDocument" & cr after tScript
    put "$xml.LoadXml(" & quote & tXml & quote & ")" & cr after tScript
    put "$toast = [Windows.UI.Notifications.ToastNotification]::new($xml)" & cr after tScript
-   put "[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier(" & quote & tAppName & quote & ").Show($toast)" after tScript
-
+   --put "[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier(" & quote & tAppName & quote & ").Show($toast)" after tScript
+   put "[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier(" & quote & "{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\WindowsPowerShell\v1.0\powershell.exe" & quote & ").Show($toast)" after tScript
+   
    -- Write the script to the system temp folder and execute it
    local tScriptPath
    put specialFolderPath("Temporary") & "/lcnotify.ps1" into tScriptPath
