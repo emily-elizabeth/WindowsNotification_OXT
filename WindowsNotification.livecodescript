@@ -1,4 +1,4 @@
-﻿script "WindowsNotification"
+script "WindowsNotification"
 
 -- Standalone LiveCode Script library for posting toast notifications on Windows 10/11.
 -- Add these handlers to your main stack script, or place them in a backscript.
@@ -76,7 +76,8 @@ on PostWindowsNotification pTitle, pSubTitle, pInformativeText
    -- The template attribute value uses the quote constant so no additional
    -- escaping is needed when the XML is passed to PowerShell's LoadXml() method.
    local tXml
-   put "<toast><visual><binding template=" & quote & "ToastGeneric" & quote & ">" & tTextNodes & "</binding></visual></toast>" into tXml
+   --put "<toast><visual><binding template=" & quote & "ToastGeneric" & quote & ">" & tTextNodes & "</binding></visual></toast>" into tXml
+   put "<toast><visual><binding template='ToastGeneric'>" & tTextNodes & "</binding></visual></toast>" into tXml
    
    -- Use the app name as the toast notifier ID so Windows associates the notification
    -- with this app in the Action Center. Falls back to a generic name if not set.
@@ -95,12 +96,24 @@ on PostWindowsNotification pTitle, pSubTitle, pInformativeText
    put "$xml = New-Object Windows.Data.Xml.Dom.XmlDocument" & cr after tScript
    put "$xml.LoadXml(" & quote & tXml & quote & ")" & cr after tScript
    put "$toast = [Windows.UI.Notifications.ToastNotification]::new($xml)" & cr after tScript
-   --put "[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier(" & quote & tAppName & quote & ").Show($toast)" after tScript
-   put "[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier(" & quote & "{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\WindowsPowerShell\v1.0\powershell.exe" & quote & ").Show($toast)" after tScript
+   put "[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier(" & quote & tAppName & quote & ").Show($toast)" after tScript
+   --put "[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier(" & quote & "{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\WindowsPowerShell\v1.0\powershell.exe" & quote & ").Show($toast)" after tScript
    
    -- Write the script to the system temp folder and execute it
    local tScriptPath
    put specialFolderPath("Temporary") & "/lcnotify.ps1" into tScriptPath
    put tScript into url ("file:" & tScriptPath)
-   get shell("powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File " & quote & tScriptPath & quote)
+   --get shell("powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File " & quote & tScriptPath & quote)
+   get shell("cmd /c start /b powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File " & quote & tScriptPath & quote)
 end PostWindowsNotification
+
+
+on RegisterNotificationAppID
+   local tAppName, tKey
+   put the cREVAppName of this stack into tAppName
+   if tAppName is empty then put "OpenXTalk Application" into tAppName
+   
+   put "HKEY_CURRENT_USER\Software\Classes\AppUserModelId\" & tAppName into tKey
+   get SetRegistry(tKey & "\DisplayName", tAppName)
+   get SetRegistry(tKey & "\IconUri", the effective filename of this stack)
+end RegisterNotificationAppID
