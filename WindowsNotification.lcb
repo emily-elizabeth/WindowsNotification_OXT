@@ -1,0 +1,61 @@
+library org.openxtalk.windowsnotification
+
+use com.livecode.foreign
+use com.livecode.engine
+
+metadata version is "1.0.0"
+metadata author is "Emily-Elizabeth Howard"
+metadata title is "Windows Notification Library"
+metadata platforms is "windows"
+
+
+
+--------------------- Public handlers
+
+-- RequestNotificationAuthorization
+-- No-op stub provided for call-site compatibility with the macOS UNUserNotification library.
+-- Windows 10 and 11 allow toast notifications by default without a runtime permission request.
+-- Users can disable notifications for the app in Windows Settings → System → Notifications.
+public handler RequestNotificationAuthorization() returns nothing
+	-- no-op: Windows toast notifications do not require a runtime authorization request
+end handler
+
+
+
+-- PostUserNotification
+-- Posts a Windows toast notification via a LiveCode Script callback.
+-- postTitle       - the bold heading line of the notification (required)
+-- subTitle        - a secondary heading shown below the title (pass empty to omit)
+-- informativeText - the body text of the notification (pass empty to omit)
+-- postIdentifier  - ignored on Windows; provided for API compatibility with the macOS library
+--
+-- The actual notification is handled by a PostWindowsNotification handler in LiveCode Script,
+-- which builds and executes a PowerShell script using the WinRT Toast Notification API.
+-- This handler must be present in your stack script — see the README for the implementation.
+public handler PostUserNotification(in postTitle as String, in subTitle as String, in informativeText as optional String, in postIdentifier as optional String) returns nothing
+	if the operating system is "windows" then
+		-- Resolve optional parameters to empty strings for the LiveCode Script handler,
+		-- which uses empty checks rather than nothing checks
+		variable tSubTitle as String
+		if subTitle is not nothing then
+			put subTitle into tSubTitle
+		end if
+
+		variable tBody as String
+		if informativeText is not nothing then
+			put informativeText into tBody
+		end if
+
+		-- Dispatch to the stack script to handle the PowerShell execution.
+		-- The stack script has access to specialFolderPath, shell, and url file I/O
+		-- which are not available in LCB.
+		variable tScriptObj as ScriptObject
+		resolve script object "this stack"
+		put the result into tScriptObj
+		dispatch "PostWindowsNotification" to tScriptObj with [postTitle, tSubTitle, tBody]
+	end if
+end handler
+
+
+
+end library
