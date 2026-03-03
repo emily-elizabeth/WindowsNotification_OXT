@@ -135,7 +135,6 @@ PostUserNotification "Hello", "", "", ""
 - The temporary PowerShell script is written to `specialFolderPath("Temporary")` as `lcnotify.ps1` and is overwritten on each call.
 - `-ExecutionPolicy Bypass` is passed to PowerShell to ensure the unsigned temporary script always runs regardless of the machine's execution policy setting.
 - XML special characters (`&`, `<`, `>`, `"`, `'`) in notification text are automatically escaped before being embedded in the toast XML payload.
-- A console window will briefly appear when the PowerShell script is executed. This is a known limitation of LiveCode's `shell()` function on Windows.
 
 ---
 
