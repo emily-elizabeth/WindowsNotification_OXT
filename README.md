@@ -14,7 +14,7 @@ A LiveCode Script library for posting toast notifications on Windows 10 and Wind
 
 ## Installation
 
-Copy the contents of `WindowsNotification.livecodescript` into your **main stack script** or a **backscript**. That is all that is required — there is no extension to install or compile.
+Start using the livecodescript.
 
 ---
 
