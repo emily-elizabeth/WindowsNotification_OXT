@@ -1,6 +1,6 @@
 # WindowsNotification
 
-A LiveCode extension for posting toast notifications on Windows 10 and Windows 11 using the WinRT Toast Notification API.
+A LiveCode Script library for posting toast notifications on Windows 10 and Windows 11 using the WinRT Toast Notification API. No LiveCode extension or compilation required.
 
 ---
 
@@ -14,8 +14,7 @@ A LiveCode extension for posting toast notifications on Windows 10 and Windows 1
 
 ## Installation
 
-1. Copy `WindowsNotification.lcb` into your project and compile it using the LiveCode Extension Builder, or install the pre-built `.lce` file via the Extension Manager.
-2. Copy the `PostWindowsNotification` handler from `WindowsNotification.livecodescript` into your **main stack script**. This is required — the LCB extension dispatches to this handler to perform the actual notification.
+Copy the contents of `WindowsNotification.livecodescript` into your **main stack script** or a **backscript**. That is all that is required — there is no extension to install or compile.
 
 ---
 
@@ -87,14 +86,6 @@ PostUserNotification "Hello", "", "", ""
 
 ---
 
-## Stack Script Requirement
-
-This extension dispatches a `PostWindowsNotification` message to your stack script to handle file I/O and shell execution, which are not available in LiveCode Builder. You must add the following handler to your **main stack script**, or notifications will silently fail.
-
-The handler is provided in `WindowsNotification.livecodescript`. Copy its contents into your stack script.
-
----
-
 ## Notes
 
 - Notifications are only shown when the app is in the **background**. Windows suppresses toast notifications from the currently focused app.
@@ -107,7 +98,7 @@ The handler is provided in `WindowsNotification.livecodescript`. Copy its conten
 
 ## Cross-Platform Usage
 
-This library exposes the same handler names as the macOS `UNUserNotification` and `NSUserNotification` extensions. To target both platforms from a single call site, load the appropriate extension for the current platform and call `PostUserNotification` without any platform checks in your application code.
+This library exposes the same handler names as the macOS `UNUserNotification` and `NSUserNotification` extensions. Add the appropriate handlers for each platform and call `PostUserNotification` without any platform checks in your application code.
 
 ```livecode
 on openStack
