@@ -104,6 +104,7 @@ on PostWindowsNotification pTitle, pSubTitle, pInformativeText
    put specialFolderPath("Temporary") & "/lcnotify.ps1" into tScriptPath
    put tScript into url ("file:" & tScriptPath)
    --get shell("powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File " & quote & tScriptPath & quote)
+   set the hideConsoleWindows to true
    get shell("cmd /c start /b powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File " & quote & tScriptPath & quote)
 end PostWindowsNotification
 
