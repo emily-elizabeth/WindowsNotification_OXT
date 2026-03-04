@@ -25,13 +25,27 @@ end xmlEscape
 
 
 -- RequestNotificationAuthorization
--- No-op provided for call-site compatibility with the macOS UNUserNotification and
--- NSUserNotification extensions. Windows 10/11 allow toast notifications by default
--- without a runtime permission request. Users can disable them in:
+-- On Windows, delegates to RegisterNotificationAppID to register the app with Windows
+-- so that toast notifications display the correct app name. This must succeed before
+-- any notifications can be posted.
+-- Also provided as a no-op stub for call-site compatibility with the macOS UNUserNotification
+-- and NSUserNotification extensions on platforms where no action is required.
+-- Users can disable notifications for the app in:
 -- Settings -> System -> Notifications
 on RequestNotificationAuthorization
-   -- no-op on Windows
+   if the platform is "win32" then
+      RegisterNotificationAppID
+   end if
 end RequestNotificationAuthorization
+
+
+-- CheckNotificationAuthorizationStatus
+-- No-op provided for call-site compatibility with the macOS UNUserNotification and
+-- NSUserNotification extensions. Windows 10/11 do not require a runtime permission
+-- check before posting notifications.
+on CheckNotificationAuthorizationStatus
+   -- no-op on Windows
+end CheckNotificationAuthorizationStatus
 
 
 -- PostUserNotification
@@ -76,7 +90,6 @@ on PostWindowsNotification pTitle, pSubTitle, pInformativeText
    -- The template attribute value uses the quote constant so no additional
    -- escaping is needed when the XML is passed to PowerShell's LoadXml() method.
    local tXml
-   --put "<toast><visual><binding template=" & quote & "ToastGeneric" & quote & ">" & tTextNodes & "</binding></visual></toast>" into tXml
    put "<toast><visual><binding template='ToastGeneric'>" & tTextNodes & "</binding></visual></toast>" into tXml
    
    -- Use the app name as the toast notifier ID so Windows associates the notification
@@ -97,13 +110,11 @@ on PostWindowsNotification pTitle, pSubTitle, pInformativeText
    put "$xml.LoadXml(" & quote & tXml & quote & ")" & cr after tScript
    put "$toast = [Windows.UI.Notifications.ToastNotification]::new($xml)" & cr after tScript
    put "[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier(" & quote & tAppName & quote & ").Show($toast)" after tScript
-   --put "[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier(" & quote & "{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\WindowsPowerShell\v1.0\powershell.exe" & quote & ").Show($toast)" after tScript
    
    -- Write the script to the system temp folder and execute it
    local tScriptPath
    put specialFolderPath("Temporary") & "/lcnotify.ps1" into tScriptPath
    put tScript into url ("file:" & tScriptPath)
-   --get shell("powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File " & quote & tScriptPath & quote)
    set the hideConsoleWindows to true
    get shell("cmd /c start /b powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File " & quote & tScriptPath & quote)
 end PostWindowsNotification

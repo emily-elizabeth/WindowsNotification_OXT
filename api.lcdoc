@@ -1,0 +1,66 @@
+Name: RegisterNotificationAppID
+Type: command
+Syntax: RegisterNotificationAppID
+Summary: Registers the application with Windows so that toast notifications display the correct app name.
+Example:
+on openStack
+   RegisterNotificationAppID
+end openStack
+Description: Use the <RegisterNotificationAppID> command to register the app with the Windows
+notification system. It writes an entry to the Windows registry under:
+HKEY_CURRENT_USER\Software\Classes\AppUserModelId\<AppName>
+This registration is required for the WinRT Toast Notification API to accept the app as a
+valid notifier. Without it, Windows will silently drop all toast notifications.
+The app name is taken from the stack's cREVAppName custom property, falling back to
+"OpenXTalk Application" if not set.
+This command is called automatically by <RequestNotificationAuthorization> on Windows.
+
+Name: RequestNotificationAuthorization
+Type: command
+Syntax: RequestNotificationAuthorization
+Summary: Registers the application with Windows and requests notification authorization.
+Example:
+on openStack
+   RequestNotificationAuthorization
+end openStack
+Description: Use the <RequestNotificationAuthorization> command to register the app with the
+Windows notification system before posting any notifications. On Windows this calls
+<RegisterNotificationAppID> to write the required registry entry. Without this, Windows will
+silently drop all toast notifications.
+On other platforms this command is a no-op, provided for drop-in compatibility with the macOS
+UNUserNotification and NSUserNotification extensions.
+Users can disable notifications for the app in Settings -> System -> Notifications.
+
+Name: CheckNotificationAuthorizationStatus
+Type: command
+Syntax: CheckNotificationAuthorizationStatus
+Summary: No-op stub provided for call-site compatibility with the macOS UNUserNotification library.
+Example: CheckNotificationAuthorizationStatus
+Description: Use the <CheckNotificationAuthorizationStatus> command to check notification
+authorization status. This command does nothing on Windows and is provided for drop-in
+compatibility with the macOS UNUserNotification library.
+Windows 10 and 11 do not require a runtime permission check before posting notifications.
+
+Name: PostUserNotification
+Type: command
+Syntax: PostUserNotification <pTitle>, <pSubTitle>, <pInformativeText>, <pIdentifier>
+Summary: Posts a toast notification to the Windows notification system.
+Parameters:
+pTitle: The bold heading text displayed at the top of the notification. Required.
+pSubTitle: A secondary heading displayed below the title. Pass empty to omit.
+pInformativeText: The body text of the notification. Pass empty to omit.
+pIdentifier: Ignored on Windows. Accepted for API compatibility with the macOS libraries.
+Example: PostUserNotification "Backup Complete", "Your files have been saved", "3 files backed up to D:\Backup", ""
+Example: PostUserNotification "Hello", "", "", ""
+Description: Use the <PostUserNotification> command to post a toast notification via the Windows
+Runtime Toast Notification API. The notification will appear in the Windows notification area
+and be stored in the Action Center.
+The notification is delivered by writing a temporary PowerShell script to the system temp folder
+and executing it. The PowerShell process exits immediately after scheduling the toast, so this
+does not block the LiveCode engine for long.
+<RequestNotificationAuthorization> must be called before using this command, otherwise
+notifications will be silently dropped by Windows.
+The app name shown in the notification is taken from the stack's cREVAppName custom property,
+falling back to "OpenXTalk Application" if not set.
+XML special characters in notification text are automatically escaped.
+This command has no effect on non-Windows platforms.

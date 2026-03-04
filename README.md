@@ -20,13 +20,11 @@ Start using the livecodescript.
 
 ## Usage
 
-Call `RegisterNotificationAppID` once at startup to register your app with Windows, then call `PostUserNotification` as needed.
+Call `RequestNotificationAuthorization` once at startup to register your app with Windows, then call `PostUserNotification` as needed.
 
 ```livecode
 on openStack
-   if the platform is "win32" then
-      RegisterNotificationAppID
-   end if
+   RequestNotificationAuthorization
 end openStack
 ```
 
@@ -77,17 +75,42 @@ end openStack
 
 **Syntax:** `RequestNotificationAuthorization`
 
+**Summary:** Registers the application with Windows and requests notification authorization.
+
+**Description:**
+
+On Windows, this command calls `RegisterNotificationAppID` to register the app with the Windows notification system. This must be called once at startup before posting any notifications, otherwise Windows will silently drop them.
+
+On other platforms this command is a no-op, provided for drop-in compatibility with the macOS `UNUserNotification` and `NSUserNotification` libraries.
+
+Users can disable notifications for the app in **Settings → System → Notifications**.
+
+**Example:**
+```livecode
+on openStack
+   RequestNotificationAuthorization
+end openStack
+```
+
+---
+
+### `CheckNotificationAuthorizationStatus`
+
+**Type:** command
+
+**Syntax:** `CheckNotificationAuthorizationStatus`
+
 **Summary:** No-op stub provided for call-site compatibility with the macOS UNUserNotification library.
 
 **Description:**
 
-This command does nothing on Windows. It is provided so that call sites are drop-in compatible with the macOS `UNUserNotification` and `NSUserNotification` libraries.
+This command does nothing on Windows. It is provided so that call sites are drop-in compatible with the macOS `UNUserNotification` library.
 
-Windows 10 and 11 allow toast notifications by default without a runtime permission request. Users can disable notifications for the app in **Settings → System → Notifications**.
+Windows 10 and 11 do not require a runtime permission check before posting notifications.
 
 **Example:**
 ```livecode
-RequestNotificationAuthorization
+CheckNotificationAuthorizationStatus
 ```
 
 ---
@@ -146,9 +169,7 @@ This library exposes the same handler names as the macOS `UNUserNotification` an
 on openStack
    -- Works on both macOS and Windows with no platform checks needed
    RequestNotificationAuthorization
-   if the platform is "win32" then
-      RegisterNotificationAppID
-   end if
+   CheckNotificationAuthorizationStatus
 end openStack
 
 on notifyUser pMessage
